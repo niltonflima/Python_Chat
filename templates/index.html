@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Chat</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/ico.ico') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Scripts: https://cdnjs.com/ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.1/socket.io.js"
+        integrity="sha512-Z6C1p1NIexPj5MsVUunW4pg7uMX6/TT3CUVldmjXx2kpip1eZcrAnxIusDxyFIikyM9A61zOVNgvLr/TGudOQg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"
+        integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+    <!--<style>
+        #top-bar {
+            display: flex;
+            align-items: center;
+            /* Alinha verticalmente no centro */
+        }
+
+        #top-bar h1 {
+            margin-left: 10px;
+            /* Espaçamento entre a imagem e o texto */
+        }
+    </style>-->
+    <div id="top-bar">
+        <!--<style>
+            /* Estilo para remover bordas */
+            table {
+                border-collapse: collapse;
+            }
+            td {
+                border: none;
+                padding: 10px;
+            }
+        </style>-->
+        <table>
+            <tr>
+                <td><img src="{{ url_for('static', filename='images/ico.png' ) }}"></td>
+                <td>
+                    <h1>python Chat</h1>
+                </td>
+            </tr>
+        </table>
+
+
+    </div>
+
+    <div id="chat-container">
+        <p>Bem-vindo! Envie a sua mensagem...</p>
+    </div>
+
+    <div id="input-container">
+        <input type="text" id="usuario" placeholder="Usuario" required>
+        <div style="width: 10px;"></div>
+        <input type="text" id="mensagem" placeholder="Mensagem" required>
+        <button id="botao">Enviar</button>
+    </div>
+
+    <!--Essa linha indica o início de um bloco de código JavaScript no documento HTML.-->
+    <script type="text/javascript">
+        /*Aqui, estamos usando a biblioteca jQuery para aguardar até que o documento HTML seja carregado completamente antes de executar o código dentro dessa função. 
+        Isso garante que o código JavaScript seja executado somente após o carregamento completo do documento HTML, 
+        para evitar erros ou problemas de execução.*/
+        $(document).ready(function () {
+            /*Cria um objeto socket para estabelecer uma conexão com o servidor WebSocket que está sendo executado na URL "localhost:5000". 
+            Isso é feito usando a biblioteca Socket.IO, que permite a comunicação em tempo real entre o cliente e o servidor.*/
+            var socket = io("localhost:5000")
+            /*Essa linha define um ouvinte para o evento "connect". 
+            Quando a conexão com o servidor WebSocket é estabelecida com sucesso, a função anônima associada a esse ouvinte é executada. 
+            Neste caso, a função imprime "Conectou..." no console do navegador.*/
+            socket.on("connect", function () {
+                console.log("Conectou...");
+            });
+            /*Aqui, estamos definindo outro ouvinte, desta vez para o evento "message". 
+            Quando o servidor WebSocket envia uma mensagem para o cliente, a função anônima associada a esse ouvinte é acionada. 
+            Ela imprime "enviou uma mensagem..." no console do navegador e, em seguida, adiciona a mensagem recebida ao elemento com o ID "chat-container" como um parágrafo HTML.*/
+            socket.on("message", function (data) {
+                console.log("enviou uma mensagem...");
+                /*Aqui, estamos selecionando o elemento com o ID "chat-container" usando a biblioteca jQuery e anexando um 
+                novo parágrafo (<p>) contendo o texto da mensagem (data) recebida do servidor.*/
+                $("#chat-container").append($('<p>').text(data));
+                /*Essa linha faz com que o contêiner de chat role automaticamente para o final, 
+                permitindo que as novas mensagens sejam sempre visíveis.*/
+                $("#chat-container").scrollTop($("#chat-container")[0].scrollHeight);
+            });
+            /*Isso define um ouvinte para o evento de clique no elemento com o ID "botao". 
+            Quando o botão é clicado, a função anônima associada é executada.*/
+            $("#botao").on('click', function () {
+                console.log("Clicou no botão...");
+                /*Quando o botão é clicado, esta linha envia a mensagem digitada pelo usuário no campo de entrada com o ID "mensagem" 
+                para o servidor WebSocket, juntamente com o nome de usuário digitado no campo de entrada com o ID "usuario".*/
+                socket.send($('#usuario').val() + ": " + $('#mensagem').val());
+                /*Aqui, estamos limpando o campo de entrada "mensagem" após o envio da mensagem, 
+                para que o usuário possa digitar uma nova mensagem.*/
+                $('#mensagem').val('');
+            });
+
+            /*Isso define outro ouvinte, desta vez para o evento de tecla pressionada no campo de entrada com o ID "mensagem".*/
+            $("#mensagem").on('keypress', function () {
+                /*Verifica se a tecla pressionada é a tecla "Enter".*/
+                if (event.key === "Enter") {
+                    console.log("Deu enter...");
+                    /*Se a tecla "Enter" for pressionada, esta linha envia a mensagem digitada pelo usuário no campo de entrada com o ID "mensagem" 
+                    para o servidor WebSocket, juntamente com o nome de usuário digitado no campo de entrada com o ID "usuario".*/
+                    socket.send($('#usuario').val() + ": " + $('#mensagem').val());
+                    /*Novamente, aqui estamos limpando o campo de entrada "mensagem" após o envio da mensagem.*/
+                    $('#mensagem').val('');
+                }
+            });
+        });
+    </script>
+</body>
+<!--
+    Esse código JavaScript estabelece uma conexão com um servidor WebSocket, ouve eventos de conexão e recebimento de mensagens, 
+    e permite ao usuário enviar mensagens digitando no campo de entrada "mensagem" e clicando em um botão ou pressionando a tecla "Enter". 
+    As mensagens recebidas são exibidas no elemento com o ID "chat-container".
+-->
+
+</html>
